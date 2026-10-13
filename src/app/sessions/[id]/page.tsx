@@ -12,8 +12,16 @@ async function deleteSession(formData: FormData) {
   redirect("/");
 }
 
-async function Detail({ params }: { params: Promise<{ id: string }> }) {
+async function Detail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ach?: string }>;
+}) {
   const { id } = await params;
+  const { ach } = await searchParams;
+  const newAch = Number(ach) || 0;
   const supabase = await createClient();
   const {
     data: { user },
@@ -34,6 +42,11 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
+      {newAch > 0 && (
+        <Link href="/rewards" className="mt-4 block rounded-xl border border-emerald-700 bg-emerald-950/50 px-4 py-3 text-sm font-semibold text-emerald-300">
+          🏆 {newAch === 1 ? "Neues Achievement freigeschaltet!" : `${newAch} neue Achievements freigeschaltet!`} Ansehen →
+        </Link>
+      )}
       <h1 className="mb-1 mt-3 text-2xl font-black">{track?.name}</h1>
       <p className="text-sm text-neutral-400">
         {new Date(session.session_date).toLocaleDateString("de-DE")}
@@ -82,12 +95,18 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
   );
 }
 
-export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+export default function SessionPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ach?: string }>;
+}) {
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
       <Link href="/" className="text-sm text-neutral-400 underline">← Zurück</Link>
       <Suspense fallback={<div className="mt-6 h-64 animate-pulse rounded-xl bg-neutral-900" />}>
-        <Detail params={params} />
+        <Detail params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );

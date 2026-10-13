@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { formatLapTime } from "@/lib/laps";
+import { levelInfo } from "@/lib/levels";
 import { createClient } from "@/lib/supabase/server";
 
 async function signOut() {
@@ -20,7 +21,7 @@ async function UserCard() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, xp")
+    .select("username, xp, rewards(name)")
     .eq("id", user.id)
     .single();
 
@@ -28,7 +29,12 @@ async function UserCard() {
     <section className="mt-8 rounded-xl border border-neutral-800 bg-neutral-900 p-5">
       <p className="text-neutral-400">Willkommen,</p>
       <p className="text-2xl font-bold">{profile?.username ?? user.email}</p>
-      <p className="mt-2 text-sm text-neutral-400">{profile?.xp ?? 0} XP</p>
+      {(profile?.rewards as unknown as { name: string } | null)?.name && (
+        <p className="text-sm text-rose-400">{(profile?.rewards as unknown as { name: string }).name}</p>
+      )}
+      <Link href="/rewards" className="mt-2 block text-sm text-neutral-400 hover:text-neutral-200">
+        Level {levelInfo(profile?.xp ?? 0).level} · {profile?.xp ?? 0} XP →
+      </Link>
     </section>
   );
 }

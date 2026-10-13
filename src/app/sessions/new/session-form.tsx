@@ -81,7 +81,9 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
       return setError(lErr.message);
     }
 
-    router.replace(`/sessions/${sessionId}`);
+    const { data: awarded } = await supabase.rpc("award_achievements");
+    const count = awarded?.length ?? 0;
+    router.replace(`/sessions/${sessionId}${count > 0 ? `?ach=${count}` : ""}`);
     router.refresh();
   }
 

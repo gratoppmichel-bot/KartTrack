@@ -21,13 +21,13 @@ async function Board({ params }: { params: Promise<{ trackId: string }> }) {
 
   const { data: sessions } = await supabase
     .from("sessions")
-    .select("user_id, profiles(username), laps(time_ms)")
+    .select("user_id, profiles(username, rewards(name)), laps(time_ms)")
     .eq("track_id", trackId);
 
-  const drivers = new Map<string, { name: string; times: number[]; sessions: number }>();
+  const drivers = new Map<string, { name: string; title: string | null; times: number[]; sessions: number }>();
   for (const s of sessions ?? []) {
-    const p = s.profiles as unknown as { username: string } | null;
-    const d = drivers.get(s.user_id) ?? { name: p?.username ?? "Unbekannt", times: [], sessions: 0 };
+    const p = s.profiles as unknown as { username: string; rewards: { name: string } | null } | null;
+    const d = drivers.get(s.user_id) ?? { name: p?.username ?? "Unbekannt", title: p?.rewards?.name ?? null, times: [], sessions: 0 };
     d.sessions += 1;
     d.times.push(...(s.laps ?? []).map((l) => l.time_ms));
     drivers.set(s.user_id, d);
@@ -38,6 +38,7 @@ async function Board({ params }: { params: Promise<{ trackId: string }> }) {
     .map(([id, d]) => ({
       id,
       name: d.name,
+      title: d.title,
       best: Math.min(...d.times),
       avg: Math.round(d.times.reduce((a, b) => a + b, 0) / d.times.length),
       laps: d.times.length,
@@ -68,6 +69,7 @@ async function Board({ params }: { params: Promise<{ trackId: string }> }) {
                 <span className="block truncate font-semibold">
                   {r.name}
                   {r.id === user.id && " (du)"}
+                  {r.title && <span className="ml-2 text-xs font-normal text-rose-400">{r.title}</span>}
                 </span>
                 <span className="text-xs text-neutral-400">
                   Ø {formatLapTime(r.avg)} · {r.laps} Runden · {r.sessions} {r.sessions === 1 ? "Session" : "Sessions"}
