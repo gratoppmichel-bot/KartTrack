@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { Suspense } from "react";
+import { Nav } from "@/components/nav";
 import { SwRegister } from "@/components/sw-register";
 import "./globals.css";
 
@@ -24,8 +26,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="de" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-neutral-950 text-neutral-100">
+      <body className="min-h-full flex flex-col bg-neutral-950 pb-16 text-neutral-100">
         {children}
+        <Suspense fallback={null}>
+          <Nav />
+        </Suspense>
         <SwRegister />
       </body>
     </html>

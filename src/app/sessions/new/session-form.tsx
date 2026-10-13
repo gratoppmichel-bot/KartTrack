@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { parseLapTime } from "@/lib/laps";
 
-type Track = { id: string; name: string; location: string | null };
+type Track = { id: string; name: string; location: string | null; is_custom: boolean };
 
 const input =
   "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 outline-none focus:border-rose-500";
@@ -15,6 +15,7 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
   const [trackId, setTrackId] = useState(tracks[0]?.id ?? "new");
   const [newTrack, setNewTrack] = useState("");
   const [newLocation, setNewLocation] = useState("");
+  const [isCustom, setIsCustom] = useState(true);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [kart, setKart] = useState("");
   const [weather, setWeather] = useState("");
@@ -44,7 +45,7 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
     if (trackId === "new") {
       const { data, error } = await supabase
         .from("tracks")
-        .insert({ name: newTrack.trim(), location: newLocation.trim() || null, created_by: userId })
+        .insert({ name: newTrack.trim(), location: newLocation.trim() || null, created_by: userId, is_custom: isCustom })
         .select("id")
         .single();
       if (error || !data) {
@@ -91,7 +92,7 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
         <select className={input} value={trackId} onChange={(e) => setTrackId(e.target.value)}>
           {tracks.map((t) => (
             <option key={t.id} value={t.id}>
-              {t.name}
+              {t.is_custom ? "★ " : ""}{t.name}
               {t.location ? ` (${t.location})` : ""}
             </option>
           ))}
@@ -102,6 +103,13 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
         <div className="flex flex-col gap-2">
           <input className={input} placeholder="Name der Strecke" value={newTrack} onChange={(e) => setNewTrack(e.target.value)} maxLength={80} />
           <input className={input} placeholder="Ort (optional)" value={newLocation} onChange={(e) => setNewLocation(e.target.value)} maxLength={80} />
+          <label className="flex items-start gap-2 text-sm text-neutral-300">
+            <input type="checkbox" className="mt-1" checked={isCustom} onChange={(e) => setIsCustom(e.target.checked)} />
+            <span>
+              Eigene Bahn – nur du und deine Freunde sehen sie und können sich darauf messen.
+              Ohne Haken ist die Bahn für alle sichtbar.
+            </span>
+          </label>
         </div>
       )}
       <label className="flex flex-col gap-1 text-sm text-neutral-400">

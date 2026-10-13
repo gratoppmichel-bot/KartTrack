@@ -10,7 +10,7 @@ async function FormLoader() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data: tracks } = await supabase.from("tracks").select("id, name, location").order("name");
+  const { data: tracks } = await supabase.from("tracks").select("id, name, location, is_custom").order("name");
   return <SessionForm tracks={tracks ?? []} userId={user.id} />;
 }
 
