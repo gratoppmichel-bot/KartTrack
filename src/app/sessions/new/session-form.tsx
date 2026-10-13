@@ -1,28 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { parseLapTime } from "@/lib/laps";
+import { enqueue, listPending, saveSession, SaveError, type PendingSession } from "@/lib/offline-queue";
 
 type Track = { id: string; name: string; location: string | null; is_custom: boolean };
 
 const input =
   "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 outline-none focus:border-rose-500";
 
+const today = () => new Date().toISOString().slice(0, 10);
+
 export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: string }) {
   const router = useRouter();
+  const [queuedTracks, setQueuedTracks] = useState<Track[]>([]);
   const [trackId, setTrackId] = useState(tracks[0]?.id ?? "new");
   const [newTrack, setNewTrack] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [isCustom, setIsCustom] = useState(true);
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(today);
   const [kart, setKart] = useState("");
   const [weather, setWeather] = useState("");
   const [notes, setNotes] = useState("");
   const [lapsText, setLapsText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [queued, setQueued] = useState(false);
+
+  // tracks created offline are not on the server yet, but must stay selectable
+  useEffect(() => {
+    listPending().then((items) => {
+      const seen = new Map<string, Track>();
+      for (const p of items) {
+        if (p.ownerId === userId && p.track.isNew && p.track.name) {
+          seen.set(p.track.id, {
+            id: p.track.id,
+            name: p.track.name,
+            location: p.track.location ?? null,
+            is_custom: p.track.isCustom ?? true,
+          });
+        }
+      }
+      setQueuedTracks([...seen.values()].filter((t) => !tracks.some((s) => s.id === t.id)));
+    });
+  }, [tracks, userId, queued]);
+
+  const allTracks = [...tracks, ...queuedTracks];
+
+  function reset() {
+    setQueued(false);
+    setLapsText("");
+    setNotes("");
+    setNewTrack("");
+    setNewLocation("");
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,53 +71,57 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
     }
     if (trackId === "new" && !newTrack.trim()) return setError("Gib einen Namen für die Strecke ein.");
 
-    setBusy(true);
-    const supabase = createClient();
-
-    let finalTrackId = trackId;
-    if (trackId === "new") {
-      const { data, error } = await supabase
-        .from("tracks")
-        .insert({ name: newTrack.trim(), location: newLocation.trim() || null, created_by: userId, is_custom: isCustom })
-        .select("id")
-        .single();
-      if (error || !data) {
-        setBusy(false);
-        return setError(error?.message ?? "Strecke konnte nicht angelegt werden.");
-      }
-      finalTrackId = data.id;
-    }
-
-    // client-generated id keeps retries idempotent (needed for offline sync later)
-    const sessionId = crypto.randomUUID();
-    const { error: sErr } = await supabase.from("sessions").upsert({
-      id: sessionId,
-      user_id: userId,
-      track_id: finalTrackId,
-      session_date: date,
-      kart_type: kart.trim() || null,
+    const isNewTrack = trackId === "new";
+    const item: PendingSession = {
+      id: crypto.randomUUID(),
+      ownerId: userId,
+      createdAt: Date.now(),
+      track: isNewTrack
+        ? { id: crypto.randomUUID(), isNew: true, name: newTrack.trim(), location: newLocation.trim() || null, isCustom }
+        : { id: trackId, isNew: false },
+      date,
+      kart: kart.trim() || null,
       weather: weather.trim() || null,
       notes: notes.trim() || null,
-    });
-    if (sErr) {
+      times,
+    };
+
+    setBusy(true);
+    try {
+      await saveSession(createClient(), item);
+    } catch (err) {
+      if (err instanceof SaveError && err.network) {
+        try {
+          await enqueue(item);
+          setQueued(true);
+        } catch {
+          setError("Offline speichern ist auf diesem Gerät nicht möglich.");
+        }
+      } else {
+        setError(err instanceof Error ? err.message : "Speichern fehlgeschlagen.");
+      }
       setBusy(false);
-      return setError(sErr.message);
-    }
-    const { error: lErr } = await supabase
-      .from("laps")
-      .upsert(times.map((time_ms, i) => ({ session_id: sessionId, lap_nr: i + 1, time_ms })), {
-        onConflict: "session_id,lap_nr",
-      });
-    if (lErr) {
-      await supabase.from("sessions").delete().eq("id", sessionId);
-      setBusy(false);
-      return setError(lErr.message);
+      return;
     }
 
-    const { data: awarded } = await supabase.rpc("award_achievements");
+    const { data: awarded } = await createClient().rpc("award_achievements");
     const count = awarded?.length ?? 0;
-    router.replace(`/sessions/${sessionId}${count > 0 ? `?ach=${count}` : ""}`);
+    router.replace(`/sessions/${item.id}${count > 0 ? `?ach=${count}` : ""}`);
     router.refresh();
+  }
+
+  if (queued) {
+    return (
+      <div className="rounded-xl border border-amber-700 bg-amber-950/40 p-5">
+        <p className="font-semibold text-amber-300">📴 Offline gespeichert</p>
+        <p className="mt-1 text-sm text-neutral-300">
+          Die Session liegt auf deinem Gerät und wird automatisch hochgeladen, sobald du wieder Netz hast.
+        </p>
+        <button onClick={reset} className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold hover:bg-rose-500">
+          Weitere Session eintragen
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -92,9 +129,10 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
       <label className="flex flex-col gap-1 text-sm text-neutral-400">
         Strecke
         <select className={input} value={trackId} onChange={(e) => setTrackId(e.target.value)}>
-          {tracks.map((t) => (
+          {allTracks.map((t) => (
             <option key={t.id} value={t.id}>
-              {t.is_custom ? "★ " : ""}{t.name}
+              {t.is_custom ? "★ " : ""}
+              {t.name}
               {t.location ? ` (${t.location})` : ""}
             </option>
           ))}

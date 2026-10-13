@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -13,6 +13,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // forget cached user-specific pages when someone lands on the login page
+  useEffect(() => {
+    navigator.serviceWorker?.controller?.postMessage({ type: "clear-pages" });
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

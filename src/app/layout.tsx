@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { Suspense } from "react";
 import { Nav } from "@/components/nav";
+import { OfflineSync } from "@/components/offline-sync";
 import { SwRegister } from "@/components/sw-register";
 import "./globals.css";
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <Nav />
         </Suspense>
+        <OfflineSync />
         <SwRegister />
       </body>
     </html>
