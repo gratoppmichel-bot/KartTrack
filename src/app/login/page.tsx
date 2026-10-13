@@ -39,7 +39,7 @@ export default function LoginPage() {
         email,
         password,
         options: {
-          data: { username },
+          data: { username: username.trim().replace(/\s+/g, " ") },
           emailRedirectTo: `${location.origin}/`,
         },
       });

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AddFriendForm } from "./add-friend-form";
+import { CopyName } from "./copy-name";
 import { removeFriendship, respondToRequest } from "./actions";
 
 async function FriendLists() {
@@ -12,6 +13,7 @@ async function FriendLists() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: me } = await supabase.from("profiles").select("username").eq("id", user.id).single();
   const { data: rows } = await supabase.from("friendships").select("user_id, friend_id, status");
   const friendships = rows ?? [];
   const otherId = (f: { user_id: string; friend_id: string }) => (f.user_id === user.id ? f.friend_id : f.user_id);
@@ -28,6 +30,7 @@ async function FriendLists() {
 
   return (
     <>
+      <CopyName username={me?.username ?? ""} />
       {incoming.length > 0 && (
         <section className="mt-6">
           <h2 className="mb-2 text-lg font-bold">Anfragen</h2>
