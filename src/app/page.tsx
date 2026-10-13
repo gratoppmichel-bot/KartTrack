@@ -49,7 +49,7 @@ async function SessionList() {
     .limit(20);
 
   if (!sessions?.length) {
-    return <p className="mt-4 text-sm text-neutral-500">Noch keine Sessions – trag deine erste ein!</p>;
+    return <p className="mt-4 text-sm text-neutral-400">Noch keine Sessions – trag deine erste ein!</p>;
   }
   return (
     <ul className="mt-4 divide-y divide-neutral-800 rounded-xl border border-neutral-800">
@@ -81,9 +81,12 @@ export default function Home() {
         <h1 className="text-2xl font-black">
           Kart<span className="text-rose-500">Track</span>
         </h1>
-        <form action={signOut}>
-          <button className="text-sm text-neutral-400 underline">Abmelden</button>
-        </form>
+        <div className="flex items-center gap-4 text-sm text-neutral-400">
+          <Link href="/profile" className="underline">Profil</Link>
+          <form action={signOut}>
+            <button className="underline">Abmelden</button>
+          </form>
+        </div>
       </header>
       <Suspense
         fallback={<div className="mt-8 h-28 animate-pulse rounded-xl bg-neutral-900" />}
@@ -92,7 +95,7 @@ export default function Home() {
       </Suspense>
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-bold">Meine Sessions</h2>
-        <Link href="/sessions/new" className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold hover:bg-rose-500">
+        <Link href="/sessions/new" className="rounded-lg bg-rose-700 px-3 py-1.5 text-sm font-semibold hover:bg-rose-600">
           + Neue Session
         </Link>
       </div>

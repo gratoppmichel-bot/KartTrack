@@ -59,12 +59,12 @@ async function Board({ params }: { params: Promise<{ trackId: string }> }) {
       </p>
 
       {ranking.length === 0 ? (
-        <p className="text-sm text-neutral-500">Noch keine Rundenzeiten auf dieser Bahn.</p>
+        <p className="text-sm text-neutral-400">Noch keine Rundenzeiten auf dieser Bahn.</p>
       ) : (
         <ol className="divide-y divide-neutral-800 rounded-xl border border-neutral-800">
           {ranking.map((r, i) => (
             <li key={r.id} className={`flex items-center gap-3 px-4 py-3 ${r.id === user.id ? "bg-rose-950/40" : ""}`}>
-              <span className="w-6 text-center text-lg font-black text-neutral-500">{i + 1}</span>
+              <span className="w-6 text-center text-lg font-black text-neutral-400">{i + 1}</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">
                   {r.name}
@@ -84,7 +84,7 @@ async function Board({ params }: { params: Promise<{ trackId: string }> }) {
         </ol>
       )}
 
-      <Link href="/sessions/new" className="mt-6 inline-block rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold hover:bg-rose-500">
+      <Link href="/sessions/new" className="mt-6 inline-block rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold hover:bg-rose-600">
         + Session auf dieser Bahn eintragen
       </Link>
     </>

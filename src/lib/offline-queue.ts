@@ -161,3 +161,8 @@ export async function syncPending(supabase: SupabaseClient): Promise<SyncResult>
     syncing = false;
   }
 }
+
+export async function clearPending() {
+  await run("readwrite", (s) => s.clear());
+  notify();
+}

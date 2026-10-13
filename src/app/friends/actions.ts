@@ -3,6 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+async function notify(supabase: Awaited<ReturnType<typeof createClient>>, kind: "request" | "accepted", other: string) {
+  try {
+    await supabase.functions.invoke("send-push", { body: { kind, other } });
+  } catch {
+    // push is best effort and must never break the friendship flow
+  }
+}
+
 export type FormState = { error?: string; ok?: string } | undefined;
 
 export async function sendRequest(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -41,6 +49,7 @@ export async function sendRequest(_prev: FormState, formData: FormData): Promise
       .eq("user_id", target.id)
       .eq("friend_id", user.id);
     if (error) return { error: error.message };
+    await notify(supabase, "accepted", target.id);
     revalidatePath("/friends");
     return { ok: `Du und ${target.username} seid jetzt Freunde!` };
   }
@@ -49,6 +58,7 @@ export async function sendRequest(_prev: FormState, formData: FormData): Promise
     .from("friendships")
     .insert({ user_id: user.id, friend_id: target.id, status: "pending" });
   if (error) return { error: error.message };
+  await notify(supabase, "request", target.id);
   revalidatePath("/friends");
   return { ok: `Anfrage an ${target.username} gesendet.` };
 }
@@ -68,6 +78,7 @@ export async function respondToRequest(formData: FormData) {
       .update({ status: "accepted" })
       .eq("user_id", requesterId)
       .eq("friend_id", user.id);
+    await notify(supabase, "accepted", requesterId);
   } else {
     await supabase.from("friendships").delete().eq("user_id", requesterId).eq("friend_id", user.id);
   }

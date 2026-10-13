@@ -117,7 +117,7 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
         <p className="mt-1 text-sm text-neutral-300">
           Die Session liegt auf deinem Gerät und wird automatisch hochgeladen, sobald du wieder Netz hast.
         </p>
-        <button onClick={reset} className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold hover:bg-rose-500">
+        <button onClick={reset} className="mt-4 rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold hover:bg-rose-600">
           Weitere Session eintragen
         </button>
       </div>
@@ -171,7 +171,7 @@ export function SessionForm({ tracks, userId }: { tracks: Track[]; userId: strin
       </label>
       <textarea className={input} placeholder="Notizen (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} />
       {error && <p className="text-sm text-red-400">{error}</p>}
-      <button disabled={busy} className="rounded-lg bg-rose-600 px-3 py-2 font-semibold hover:bg-rose-500 disabled:opacity-60">
+      <button disabled={busy} className="rounded-lg bg-rose-700 px-3 py-2 font-semibold hover:bg-rose-600 disabled:opacity-60">
         {busy ? "Speichere…" : "Session speichern"}
       </button>
     </form>

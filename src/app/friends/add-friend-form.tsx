@@ -15,7 +15,7 @@ export function AddFriendForm() {
           autoCapitalize="none"
           required
         />
-        <button disabled={pending} className="rounded-lg bg-rose-600 px-4 py-2 font-semibold hover:bg-rose-500 disabled:opacity-60">
+        <button disabled={pending} className="rounded-lg bg-rose-700 px-4 py-2 font-semibold hover:bg-rose-600 disabled:opacity-60">
           Hinzufügen
         </button>
       </div>

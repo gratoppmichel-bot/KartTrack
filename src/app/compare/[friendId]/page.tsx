@@ -80,7 +80,7 @@ async function Comparison({ params }: { params: Promise<{ friendId: string }> })
                 </span>
                 <span className={l.diff > 0 ? "font-bold text-emerald-400" : ""}>{formatLapTime(l.theirBest)}</span>
               </div>
-              <div className="mt-1 grid grid-cols-3 text-center text-xs text-neutral-500">
+              <div className="mt-1 grid grid-cols-3 text-center text-xs text-neutral-400">
                 <span>Du</span>
                 <span />
                 <span>{friend.username}</span>

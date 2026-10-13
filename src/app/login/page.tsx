@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -94,7 +95,7 @@ export default function LoginPage() {
         {info && <p className="text-sm text-emerald-400">{info}</p>}
         <button
           disabled={busy}
-          className="rounded-lg bg-rose-600 px-3 py-2 font-semibold hover:bg-rose-500 disabled:opacity-60"
+          className="rounded-lg bg-rose-700 px-3 py-2 font-semibold hover:bg-rose-600 disabled:opacity-60"
         >
           {mode === "login" ? "Anmelden" : "Registrieren"}
         </button>
@@ -106,6 +107,7 @@ export default function LoginPage() {
       >
         {mode === "login" ? "Noch kein Konto? Registrieren" : "Schon ein Konto? Anmelden"}
       </button>
+      <Link href="/datenschutz" className="text-xs text-neutral-400 underline">Datenschutz</Link>
     </main>
   );
 }

@@ -49,7 +49,7 @@ async function FriendLists() {
       <section className="mt-6">
         <h2 className="mb-2 text-lg font-bold">Meine Freunde</h2>
         {accepted.length === 0 ? (
-          <p className="text-sm text-neutral-500">Noch keine Freunde – füge oben jemanden per Benutzernamen hinzu.</p>
+          <p className="text-sm text-neutral-400">Noch keine Freunde – füge oben jemanden per Benutzernamen hinzu.</p>
         ) : (
           <ul className="divide-y divide-neutral-800 rounded-xl border border-neutral-800">
             {accepted.map((f) => (
@@ -60,7 +60,7 @@ async function FriendLists() {
                 <form action={removeFriendship}>
                   <input type="hidden" name="user_id" value={f.user_id} />
                   <input type="hidden" name="friend_id" value={f.friend_id} />
-                  <button className="text-xs text-neutral-500 underline">Entfernen</button>
+                  <button className="text-xs text-neutral-400 underline">Entfernen</button>
                 </form>
               </li>
             ))}
@@ -74,11 +74,11 @@ async function FriendLists() {
           <ul className="divide-y divide-neutral-800 rounded-xl border border-neutral-800">
             {outgoing.map((f) => (
               <li key={f.friend_id} className="flex items-center justify-between px-4 py-3">
-                <span>{name(f.friend_id)} <span className="text-xs text-neutral-500">· wartet auf Antwort</span></span>
+                <span>{name(f.friend_id)} <span className="text-xs text-neutral-400">· wartet auf Antwort</span></span>
                 <form action={removeFriendship}>
                   <input type="hidden" name="user_id" value={f.user_id} />
                   <input type="hidden" name="friend_id" value={f.friend_id} />
-                  <button className="text-xs text-neutral-500 underline">Zurückziehen</button>
+                  <button className="text-xs text-neutral-400 underline">Zurückziehen</button>
                 </form>
               </li>
             ))}

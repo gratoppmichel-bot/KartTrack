@@ -26,7 +26,7 @@ async function TrackList() {
   }
 
   if (byTrack.size === 0) {
-    return <p className="text-sm text-neutral-500">Sobald du oder deine Freunde Sessions eintragen, erscheinen hier die Bahnen.</p>;
+    return <p className="text-sm text-neutral-400">Sobald du oder deine Freunde Sessions eintragen, erscheinen hier die Bahnen.</p>;
   }
   const tracks = [...byTrack.entries()].sort((a, b) => b[1].drivers.size - a[1].drivers.size);
   return (
